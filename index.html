@@ -1,0 +1,175 @@
+<html>
+<head>
+	<!-- development version, includes helpful console warnings -->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+<div id="app">
+
+    <input id="name" type="text" placeholder="nuevo usuario" />
+    <input id="painter" type="text" placeholder="painter" />
+    <input id="country" type="text" placeholder="country" />
+
+    <button v-on:click="addPicture($event)">Add</button>
+
+    <div
+      v-for="(picture, index) in pictures"
+      class="picture"
+    >
+
+      <div>
+        {{ index }} {{ picture.id_picture }} {{ picture.picture_name }}
+        <button v-on:click="deletePicture(picture.id_picture, index, $event)">Delete</button>
+        <button v-on:click="editPictureForm(picture.id_picture, index, $event)">Edit</button>
+
+        <div v-if="picture.showEdit">
+          <input v-bind:id="'name-' + picture.id_picture" type="text" v-bind:value="picture.picture_name" />
+          <input v-bind:id="'painter-' + picture.id_picture" type="text" v-bind:value="picture.id_painter" />
+          <input v-bind:id="'country-' + picture.id_picture" type="text" v-bind:value="picture.id_country" />
+          <button v-on:click="editPictureAction(picture.id_picture)">Edit</button>
+        </div>
+
+        <span class="lighten">
+          <span></span>
+        </span>
+      </div>
+    </div>
+
+</div>
+
+
+
+
+<script>
+
+  new Vue({
+    el: '#app', 
+
+    data () {
+      return {
+        pictures: null
+      }
+    },
+    mounted () {
+      this.listar()
+    },
+
+    methods: {
+        listar: function (){
+          let config = {
+            headers: {
+              X_HTTP_USER_ID: 1,
+            }
+          }
+
+          axios
+            .get('http://localhost:8888/pictures', config)
+            .then(response => (this.pictures = response.data))
+      },
+
+
+      deletePicture: function (id, index, event){
+        let config = {
+          headers: {
+            X_HTTP_USER_ID: 1,
+          }
+        }      
+
+        console.log(event)
+        axios
+          .delete('http://localhost:8888/pictures/delete/'+id, config)
+          .then(response => (this.info = response.data))
+
+        this.pictures.splice(index, 1)
+      },
+
+
+      editPictureForm: function(id_picture, index, event){
+        console.log('editando picture: ' + index)
+        this.pictures[index]["showEdit"]=true;
+        this.pictures.push();
+      },
+
+      editPictureAction: function(id_picture, index){
+        const nameInput  = document.getElementById('name-'+id_picture).value;
+        const painterInput  = document.getElementById('painter-'+id_picture).value;
+        const countryInput  = document.getElementById('country-'+id_picture).value;
+
+
+        let config = {
+          headers: {
+            X_HTTP_USER_ID: 1,
+          }
+        }  
+
+        axios
+          .put('http://localhost:8888/pictures/update/'+id_picture,
+          {
+            id_painter: painterInput,
+            name: nameInput,
+            id_country: countryInput            
+          },
+           config)
+          
+          .then( this.listar() )        
+        
+      },
+
+
+      addPicture: function (event){       
+        console.log('add user function')
+        const nameInput  = document.getElementById('name').value;
+        const painterInput  = document.getElementById('painter').value;
+        const countryInput  = document.getElementById('country').value;
+
+
+
+        console.log(nameInput);
+
+
+
+        let config = {
+          headers: {
+            X_HTTP_USER_ID: 1,
+          }
+        }
+
+
+        axios
+        .put('http://localhost:8888/pictures/add',
+          {
+            id_painter: painterInput,
+            name: nameInput,
+            id_country: countryInput
+          },
+          config
+          )
+        .then(
+          this.addUserToList
+        )
+        
+      },
+
+      addUserToList: function(){
+          var newPicture = {};
+          newPicture['id_picture'] = '0';
+          newPicture['picture_name'] = document.getElementById('name').value;
+          this.pictures.push(newPicture);
+
+          document.getElementById('name').value='';
+          document.getElementById('painter').value='';
+          document.getElementById('country').value='';  
+
+      }
+    },
+
+  })
+</script>
+
+</body>
+
+</html>
