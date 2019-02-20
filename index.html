@@ -11,8 +11,16 @@
 <div id="app">
 
     <input id="name" type="text" placeholder="nuevo usuario" />
-    <input id="painter" type="text" placeholder="painter" />
-    <input id="country" type="text" placeholder="country" />
+
+    <select v-if="countries" id="country">
+      <option v-for="(country, index) in countries" v-bind:value="country.id_country">{{ country.name }}</option>
+    </select>
+
+    <select v-if="painters" id="painter">
+      <option v-for="(painter, index) in painters" v-bind:value="painter.id_painter">{{ painter.name }}</option>
+    </select>
+
+
 
     <button v-on:click="addPicture($event)">Add</button>
 
@@ -22,7 +30,7 @@
     >
 
       <div>
-        {{ index }} {{ picture.id_picture }} {{ picture.picture_name }}
+        {{ index }} {{ picture.id_picture }} "{{ picture.picture_name }}", de {{ picture.painter_name }} ({{ picture.country }})
         <button v-on:click="deletePicture(picture.id_picture, index, $event)">Delete</button>
         <button v-on:click="editPictureForm(picture.id_picture, index, $event)">Edit</button>
 
@@ -51,15 +59,21 @@
 
     data () {
       return {
-        pictures: null
+        pictures: null,
+        countries: null,
+        painters: null,
       }
     },
     mounted () {
-      this.listar()
+      this.listar();
+      this.listarCountries();
+      this.listarPainters();
     },
 
     methods: {
         listar: function (){
+          console.log('listando...');
+
           let config = {
             headers: {
               X_HTTP_USER_ID: 1,
@@ -69,6 +83,18 @@
           axios
             .get('http://localhost:8888/pictures', config)
             .then(response => (this.pictures = response.data))
+      },
+
+      listarCountries: function (){
+          axios
+            .get('http://localhost:8888/countries')
+            .then(response => (this.countries = response.data))
+
+      },
+
+      listarPainters: function(){
+        axios.get('http://localhost:8888/painters')
+        .then(response => (this.painters = response.data))
       },
 
 
@@ -115,10 +141,28 @@
           },
            config)
           
-          .then( this.listar() )        
+        .then(this.listarEspecifico(id_picture, index));
         
       },
 
+      listarEspecifico: function (id_picture, index){
+          let config = {
+            headers: {
+              X_HTTP_USER_ID: 1,
+            }
+          }  
+
+          axios
+            .get('http://localhost:8888/pictures/'+id_picture, config)
+            .then(function (response) {
+            console.log(response.data);
+
+            var obj = JSON.parse(response.data);
+
+          });
+
+
+      },
 
       addPicture: function (event){       
         console.log('add user function')
