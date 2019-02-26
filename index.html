@@ -21,6 +21,9 @@
     </select>
 
 
+    <input type="file" name="example1" id="example1"/>
+    <button v-on:click="uploadFile($event)">Upload file</button>
+
 
     <button v-on:click="addPicture($event)">Add</button>
 
@@ -197,6 +200,32 @@
         )
         
       },
+
+      uploadFile: function (event){       
+        let config = {
+          headers: {
+            X_HTTP_USER_ID: 1,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+
+        var formData = new FormData();
+        var imagefile = document.querySelector('#example1');
+        formData.append("example1", imagefile.files[0]);
+        formData.append("name", "jose");
+
+        axios
+        .post('http://localhost:8888/uploadfile', formData,
+          {},
+          config
+          )
+        .then(
+          this.addUserToList
+        )
+        
+      },
+
+
 
       addUserToList: function(){
           var newPicture = {};
